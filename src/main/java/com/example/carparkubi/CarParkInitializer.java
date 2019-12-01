@@ -16,7 +16,7 @@ public class CarParkInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        logger.info("initialiyze db...");
+        logger.info("initialize db...");
         for (long i = 0; i < 10; i++) {
            ChargePoint point = new ChargePoint();
            point.setStatus(ChargePoint.Status.AVAILABLE);
