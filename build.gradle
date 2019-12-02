@@ -19,8 +19,15 @@ dependencies {
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
+	implementation 'io.springfox:springfox-swagger2:2.9.2'
+	implementation 'io.springfox:springfox-swagger-ui:2.9.2'
 }
 
 test {
 	useJUnitPlatform()
+
+	failFast = true
+	beforeTest { descriptor ->
+		logger.lifecycle("Running test: " + descriptor)
+	}
 }

@@ -51,6 +51,28 @@ CP10 AVAILABLE
 Link to the git repository with the implementation and the documentation on how to call the API (Swagger/Postman collection/text description).
 Please add any details about your ideas and considerations to this README and add it to the repository.
 
-# Challenge Details
+## Challenge Details
 
-TBD.
+**WARNING: This is my first Spring Boot / Java Enterprise Code, EVER.**
+
+I implemented the challenge modelling the ChargePoints as POJOS persisted in a JPA repository to the H2 embedded database. The overall used ampere are tracked using those ChargePoints in the database with their `status` and `chargeType` fields. When a car is plugged,
+the repository is consulted to check if we need to switch chargepoints with cars plugged in earlier to slow charging, in order to provide fast-charge to the new car. When a car is unplugged, the repository is consulted to check if we can switch other chargepoints to fast charging. All this while maintaining the maximum possible ampere of 100A.
+
+Thread safety is achieved by wrapping the operations upon plug and unplug events into `@Transactional`, ensuring a (database?) transaction
+is used across several calls to the repository to retrieve and manipulate the current state in one atomic step.
+
+The application is built as REST Api consuming and producing json. Modelling of the endpoints might be a but un-RESTy to some.
+The basic idea behind adding an endpoint like  `/chargepoint/<ID>/event` and putting event type and timestamp into url params
+was to maybe also record single events in addition to maintaining the computed current state in the ChargePointRepository.
+It might be more appropriate to solve it differently but I found it appealing to do so and didnt regret it during implementation.
+
+The Swagger UI can be found at:
+
+http://localhost:8080/swagger-ui.html
+
+It can also be inspected at https://editor.swagger.io using the given `swagger.json` file in this repository.
+
+* There are still tests missing, especially:
+  - Verifying that chargepoints with cars plugged in earlier are prioritized when downgrading to slow charging with 10A
+  - Verifying that remaining amperes are distributed with priority to chargepoints with cars plugged in later
+  - a property test ensuring proper handling and distribution of available ampere to all charging points (not exceeding max ampere) given any order of events

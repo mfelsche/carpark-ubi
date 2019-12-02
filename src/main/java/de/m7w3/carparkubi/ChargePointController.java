@@ -1,4 +1,4 @@
-package com.example.carparkubi;
+package de.m7w3.carparkubi;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +16,8 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-public class CarParkController {
+@RequestMapping("/chargepoint")
+public class ChargePointController {
 
     public static class ChargePointNotFoundException extends RuntimeException {
         private final Long id;
@@ -48,7 +49,7 @@ public class CarParkController {
     ChargePointRepository repo;
 
     @Autowired
-    CarParkService carParkService;
+    ChargePointService chargePointService;
 
     @ExceptionHandler(ChargePointNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
@@ -57,7 +58,7 @@ public class CarParkController {
         return new ErrorResponse("charge-point " + ex.getId() + " not found.");
     }
 
-    @PostMapping(path = "/chargepoint/{chargePointId}/event", params = "event=plug")
+    @PostMapping(path = "/{chargePointId}/event", params = "event=plug")
     @ResponseStatus(HttpStatus.OK)
     public void plug(@PathVariable Long chargePointId, @RequestParam(name="timestamp", required = true) Long timestamp, HttpServletResponse response) {
 
@@ -65,19 +66,20 @@ public class CarParkController {
         if (cpo.isPresent()) {
             ChargePoint cp = cpo.get();
             if (!cp.isAvailable()) {
+                logger.info("cp {} is not available, unplugging it beforehand.", cp.getId());
                 // let's assume we didn't unplug before, due to missed unplug event
                 // or events coming in out of order, so unplug now, to ensure valid state
-                carParkService.unplug(cp, timestamp);
+                chargePointService.unplug(cp, timestamp);
             }
             // try to get fast-charge, if possible switch old chargepoints to slowcharge to achieve it
             // change status of ChargePoint
-            carParkService.startCharging(cp, timestamp);
+            chargePointService.startCharging(cp, timestamp);
         } else {
             throw new ChargePointNotFoundException(chargePointId);
         }
     }
 
-    @PostMapping(path = "/chargepoint/{chargePointId}/event", params = "event=unplug")
+    @PostMapping(path = "/{chargePointId}/event", params = "event=unplug")
     @ResponseStatus(HttpStatus.OK)
     public void unplug(@PathVariable Long chargePointId, @RequestParam(name="timestamp", required = true) Long timestamp) {
         // try to allocate available ampere to currently charging cars sorted from newest to oldest
@@ -91,7 +93,7 @@ public class CarParkController {
                 // do nothing, we might receive this out of order
                 logger.info("Chargepoint unplugged while being unplugged...");
             } else {
-                carParkService.unplug(cp, timestamp);
+                chargePointService.unplug(cp, timestamp);
             }
         }
     }

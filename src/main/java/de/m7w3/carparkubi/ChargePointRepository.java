@@ -1,6 +1,5 @@
-package com.example.carparkubi;
+package de.m7w3.carparkubi;
 
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.util.List;

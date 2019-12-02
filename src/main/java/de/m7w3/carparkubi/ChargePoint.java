@@ -1,13 +1,13 @@
-package com.example.carparkubi;
+package de.m7w3.carparkubi;
 
 import javax.persistence.*;
-import java.time.Instant;
 
 @Entity
 public class ChargePoint {
 
+    // do not use generated value here
+    // we initialize the db with static values from 0-9
     @Id
-    @GeneratedValue
     private Long id;
 
     @Enumerated(EnumType.STRING)
@@ -16,7 +16,18 @@ public class ChargePoint {
     @Enumerated(EnumType.STRING)
     private ChargePoint.ChargeType chargeType;
 
+    /**
+     * time of the last event
+     */
     private long cTime;
+
+    public ChargePoint() {}
+    public ChargePoint(Long id, Status status, ChargeType chargeType, long cTime) {
+        setId(id);
+        setStatus(status);
+        setChargeType(chargeType);
+        setCTime(cTime);
+    }
 
     public Long getId() {
         return id;
